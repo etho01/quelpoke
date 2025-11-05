@@ -29,7 +29,7 @@ jobs:
 
       - name: Build image
         env:
-          IMAGE: ${{ vars.ARTIFACT_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO_ID }}:${{ github.sha }}
+          IMAGE: europe-west9-docker.pkg.dev/cs-poc-hpzdycpiqjyvinhrczvlwcn/student-nicolas/quelpoke:${{ github.sha }}
         run: |
           docker build -t "$IMAGE" .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
