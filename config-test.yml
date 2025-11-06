@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quelpoke
+  labels:
+    app: quelpoke
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quelpoke
+  template:
+    metadata:
+      labels:
+        app: quelpoke
+    spec:
+      containers:
+        - name: quelpoke
+          # Remplacez l'image par celle de votre registre
+          image: ghcr.io/votre-org/quelpoke:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          # Probes génériques (TCP) si vous n’avez pas d’endpoint /healthz
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quelpoke
+  labels:
+    app: quelpoke
+spec:
+  type: ClusterIP
+  selector:
+    app: quelpoke
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: quelpoke
+spec:
+  parentRefs:
+    - name: http        # Gateway existant (à adapter si besoin)
+      # namespace: default  # Décommentez si le Gateway est dans un autre namespace
+  hostnames:
+    - quelpoke.example.com  # ⚠️ Remplacez par votre FQDN ou supprimez si non requis
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: quelpoke
+          port: 80
