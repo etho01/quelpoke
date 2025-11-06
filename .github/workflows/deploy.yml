@@ -29,10 +29,30 @@ jobs:
 
       - name: Build image
         env:
-          IMAGE: ${{ vars.ARTIFACT_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO_ID }}/quelpoke:latest
+          IMAGE: ${{ vars.ARTIFACT_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO_ID }}/quelpoke
         run: |
-          docker build -t "$IMAGE" .
+          docker build -t "${IMAGE}:${GITHUB_SHA}" -t "${IMAGE}:latest" .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Push image
-        run: docker push "$IMAGE"
+      - name: Push Docker image
+        run: |
+          docker push "${IMAGE}:${GITHUB_SHA}"
+          docker push "${IMAGE}:latest"
+
+      # --- Récupère les credentials du cluster (GKE) ---
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.GKE_CLUSTER }}
+          location: ${{ vars.GKE_LOCATION }}   # zone ou région (ex: europe-west9)
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      # --- Déploiement ---
+      - name: Apply manifests (create/update)
+        run: |
+          kubectl apply -f config.yaml
+
+      - name: Set image to current SHA (rollout)
+        run: |
+          kubectl -n nicolasb set image deployment/quelpokenicolasb quelpokenicolasb="${IMAGE}:${GITHUB_SHA}"
+          kubectl -n nicolasb rollout status deployment/quelpokenicolasb --timeout=120s
