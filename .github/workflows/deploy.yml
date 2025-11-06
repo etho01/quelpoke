@@ -48,10 +48,23 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       # --- Déploiement ---
-      - name: Apply manifests (create/update)
-        env : 
-          IMAGE_KUBERNETES: ${IMAGE}:${GITHUB_SHA}
+    #  - name: Apply manifests (create/update)
+    #    env : 
+    #      IMAGE_KUBERNETES: ${IMAGE}:${GITHUB_SHA}
+    #    run: |
+    #      cat config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst | tee config.yaml
+    #      kubectl apply -f config.yaml
+
+      - name: push helm Chart
+        env:
+          HELM_REPOSITORY_URL: europe-west9-docker.pkg.dev/cs-poc-hpzdycpiqjyvinhrczvlwcn/student-nicolasb/helm
         run: |
-          cat config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst | tee config.yaml
-          cat config.yaml
-          kubectl apply -f config.yaml
+          helm package ./helm
+          helm push quelpokenicolasb-0.1.0.tgz oci://${HELM_REPOSITORY_URL}
+
+      - name: Deploy with Helm
+        run: |
+          cat helm/values.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst | tee helm/values.yaml
+          helm upgrade --install quelpoke ./helm \
+            --namespace nicolasb \
+            --create-namespace 

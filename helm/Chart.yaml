@@ -1,0 +1,6 @@
+apiVersion: v2
+name: quelpokenicolasb
+description: Helm chart pour déployer l'application quelpokenicolasb
+type: application
+version: 0.1.0
+appVersion: "1.0"
