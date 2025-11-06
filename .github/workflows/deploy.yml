@@ -50,7 +50,7 @@ jobs:
       # --- Déploiement ---
       - name: Apply manifests (create/update)
         run: |
-          CAT config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst | config.yaml
+          cat config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst > config.yaml
           kubectl apply -f config.yaml
 
       - name: Set image to current SHA (rollout)
