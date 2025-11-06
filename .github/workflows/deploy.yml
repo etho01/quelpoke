@@ -49,9 +49,10 @@ jobs:
 
       # --- Déploiement ---
       - name: Apply manifests (create/update)
-        env : 
-          IMAGE_KUBERNETES: ${IMAGE}:${GITHUB_SHA}
         run: |
-          envsubst < config.yaml.conf > config.yaml
-          echo cat config.yaml
           kubectl apply -f config.yaml
+
+      - name: Set image to current SHA (rollout)
+        run: |
+          kubectl -n nicolasb set image deployment/quelpokenicolasb quelpokenicolasb="${IMAGE}:${GITHUB_SHA}"
+          kubectl -n nicolasb rollout status deployment/quelpokenicolasb --timeout=120s

@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
       - name: quelpokenicolasb
-        image: %{IMAGE_KUBERNETES}%
+        image: europe-west9-docker.pkg.dev/cs-poc-hpzdycpiqjyvinhrczvlwcn/student-nicolasb/quelpoke:latest
         ports:
         - containerPort: 8080
         resources:
