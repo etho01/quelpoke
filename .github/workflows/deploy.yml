@@ -52,8 +52,9 @@ jobs:
         env : 
           IMAGE_KUBERNETES: ${IMAGE}:${GITHUB_SHA}
         run: |
-          cat config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst > configDev.yaml
-          kubectl apply -f configDev.yaml
+          cat config.yaml | IMAGE="${IMAGE}:${GITHUB_SHA}" envsubst | tee config.yaml
+          cat config.yaml
+          kubectl apply -f config.yaml
 
       - name: Set image to current SHA (rollout)
         run: |
