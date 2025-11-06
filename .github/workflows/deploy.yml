@@ -53,3 +53,5 @@ jobs:
           IMAGE_KUBERNETES: ${IMAGE}:${GITHUB_SHA}
         run: |
           envsubst < config.yaml.conf > config.yaml
+          echo cat config.yaml
+          kubectl apply -f config.yaml
